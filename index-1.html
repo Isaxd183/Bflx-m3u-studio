@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bflix M3u Studio</title>
+    <style>
+        /* Definición de Variables CSS por defecto (Verde con Negro) */
+        :root {
+            --theme-header-bg: #000;
+            --theme-main-bg: #1c1c1c;
+            --theme-surface: #2c2c2c;
+            --theme-primary: #4CAF50; /* Verde principal */
+            --theme-accent: #388E3C; /* Verde oscuro para hover */
+            --theme-text: #e0e0e0;
+            --theme-border: #444;
+            --theme-danger: #e74c3c;
+            --theme-secondary-btn: #424242; /* Botón secundario oscuro */
+        }
+        
+        /* Tema: Oscuro */
+        .theme-dark {
+            --theme-primary: #007bff; /* Azul */
+            --theme-accent: #0056b3;
+            --theme-secondary-btn: #424242;
+        }
+
+        /* Tema: Claro */
+        .theme-light {
+            --theme-header-bg: #f8f9fa;
+            --theme-main-bg: #ffffff;
+            --theme-surface: #f4f4f9;
+            --theme-primary: #17a2b8; /* Cyan/Turquesa */
+            --theme-accent: #138496;
+            --theme-text: #212529;
+            --theme-border: #ccc;
+            --theme-secondary-btn: #6c757d;
+        }
+        
+        /* Tema: Rojo */
+        .theme-red {
+            --theme-primary: #dc3545; /* Rojo */
+            --theme-accent: #c82333;
+        }
+        
+        /* Tema: Verde */
+        .theme-green {
+            --theme-primary: #28a745; /* Verde */
+            --theme-accent: #1e7e34;
+        }
+
+        /* Tema: Rojo con Negro */
+        .theme-red-dark {
+            --theme-header-bg: #000;
+            --theme-main-bg: #1c1c1c;
+            --theme-surface: #2c2c2c;
+            --theme-primary: #dc3545; /* Rojo */
+            --theme-accent: #c82333;
+            --theme-text: #e0e0e0;
+            --theme-border: #444;
+            --theme-secondary-btn: #424242;
+        }
+
+
+        /* Base Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--theme-main-bg);
+            color: var(--theme-text);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--theme-header-bg);
+            color: var(--theme-text);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        
+        /* Contenedor principal para simular el móvil */
+        .container {
+            max-width: 500px; /* Ancho para simular móvil */
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--theme-surface);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+        }
+        
+        /* Tabs (Generar M3U / Editar M3U / Xtream Tools) */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--theme-border);
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            flex-shrink: 0;
+            padding: 10px 15px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1em;
+            font-weight: bold;
+            color: var(--theme-text);
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: var(--theme-primary);
+            border-bottom: 3px solid var(--theme-primary);
+            opacity: 1;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Estilo de la Entrada M3U (Similar a la captura) */
+        .m3u-entry {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #333; /* Fondo fijo para la caja de la película */
+            position: relative;
+        }
+        
+        /* Barra de color lateral */
+        .m3u-entry::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--theme-primary); /* Usa el color primario del tema */
+            border-radius: 8px 0 0 8px;
+        }
+        
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 10px; /* Espacio para la barra lateral */
+            margin-bottom: 10px;
+        }
+
+        .entry-header h4 {
+            margin: 0;
+            color: var(--theme-primary);
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--theme-danger);
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        
+        /* Estilos de Input */
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--theme-surface);
+            color: var(--theme-text);
+            font-size: 1em;
+        }
+        
+        textarea {
+             width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            box-sizing: border-box;
+            border: 1px solid var(--theme-primary);
+            border-radius: 4px;
+            background-color: #000;
+            color: var(--theme-primary);
+            font-family: monospace;
+            resize: none;
+            height: 150px;
+        }
+        
+        /* Botones principales */
+        .btn-main {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+            width: 100%; /* Ajustado para Xtream Tools */
+            box-sizing: border-box;
+        }
+
+        .btn-main.primary {
+            background-color: var(--theme-primary);
+            color: #000; /* Color fijo para contraste con el verde/rojo */
+        }
+
+        .btn-main.primary:hover:not(:disabled) {
+            background-color: var(--theme-accent);
+        }
+        
+        .btn-main.secondary {
+            background-color: var(--theme-secondary-btn);
+            color: var(--theme-text);
+            width: fit-content;
+        }
+        
+        .btn-main.secondary:hover:not(:disabled) {
+            background-color: #555;
+        }
+
+        .btn-main:disabled {
+            background-color: #555;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+        
+        /* Botón de Ordenar y Selector */
+        #sortBtn {
+            background-color: var(--theme-secondary-btn);
+            color: var(--theme-text);
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-left: 10px;
+        }
+        #sortBtn:hover {
+             background-color: #555;
+        }
+
+        .sort-dropdown {
+            position: absolute;
+            z-index: 100;
+            background-color: #333;
+            border: 1px solid var(--theme-primary);
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            padding: 5px 0;
+            min-width: 180px;
+            top: 40px; /* Ajustar posición debajo del botón */
+            right: 0;
+            display: none;
+        }
+        
+        .sort-dropdown.show {
+            display: block;
+        }
+
+        .sort-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            text-align: left;
+            background: none;
+            border: none;
+            color: var(--theme-text);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .sort-dropdown button:hover {
+            background-color: var(--theme-primary);
+            color: black;
+        }
+
+        /* Contenedor de botones inferiores */
+        .action-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .top-actions {
+             display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        
+        /* Botones de URL y Archivo en Editar */
+        .btn-load {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: background-color 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #loadUrlBtn {
+            background-color: #007bff; /* Azul fijo */
+            color: white;
+        }
+        
+        #loadUrlBtn:hover {
+            background-color: #0056b3;
+        }
+        
+        #loadFileBtn {
+            background-color: #ff9800; /* Naranja fijo */
+            color: white;
+        }
+
+        #loadFileBtn:hover {
+            background-color: #e68a00;
+        }
+
+        /* Estilos generales */
+        h2 { color: var(--theme-primary); margin-top: 0; }
+        .divider {
+            text-align: center;
+            color: #888;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        /* Selector de Tema */
+        #theme-selector {
+            padding: 8px;
+            background-color: var(--theme-surface);
+            color: var(--theme-text);
+            border: 1px solid var(--theme-border);
+            border-radius: 4px;
+        }
+        
+        /* Estilos específicos de Xtream Tools */
+        .xtream-section {
+            border: 1px solid var(--theme-border);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background-color: #333;
+        }
+        
+        .xtream-section h3 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--theme-primary);
+            padding-bottom: 5px;
+            color: var(--theme-primary);
+        }
+        
+        .input-xtream-group {
+            margin-bottom: 10px;
+        }
+        
+        .input-xtream-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .result-link {
+             margin-top: 15px;
+        }
+        
+        .result-link-output {
+            background-color: #111;
+            color: #fff;
+            padding: 15px;
+            border: 1px dashed var(--theme-primary);
+            word-break: break-all;
+            border-radius: 4px;
+            min-height: 40px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
+    </style>
+</head>
+<body class="theme-green-dark">
+
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 500px; margin: auto;">
+            <h1>🎬 Bflix M3u Studio</h1>
+            <select id="theme-selector" onchange="setTheme(this.value)">
+                <option value="green-dark">Verde con Negro</option>
+                <option value="red-dark">Rojo con Negro</option>
+                <option value="light">Claro</option>
+                <option value="dark">Oscuro (Azul)</option>
+                <option value="green">Verde</option>
+                <option value="red">Rojo</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab('generate')">Generador M3U</button>
+            <button class="tab-button" onclick="openTab('edit')">Editor M3U</button>
+            <button class="tab-button" onclick="openTab('xtream')">Xtream Tools</button>
+        </div>
+
+        <div id="generate" class="tab-content active">
+            <div class="top-actions">
+                <h2 style="font-size: 1.3em;">Lista de Películas</h2>
+                 <div style="position: relative;">
+                    <button id="sortBtnGenerate" onclick="toggleSortDropdown('generate')" disabled>⚙️ Ordenar</button>
+                    <div id="sortDropdownGenerate" class="sort-dropdown">
+                        <button onclick="sortEntries('generate', 'title-asc')">Título (A-Z)</button>
+                        <button onclick="sortEntries('generate', 'title-desc')">Título (Z-A)</button>
+                        <button onclick="sortEntries('generate', 'group-asc')">Por Sección</button>
+                        <button onclick="sortEntries('generate', 'random')">Al Azar</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="m3uFieldsContainer">
+                </div>
+            
+            <div class="action-group">
+                <button id="addEntryBtn" class="btn-main secondary" onclick="addM3uEntry('generate')">Añadir otra Película</button>
+                <button id="generateM3uBtn" class="btn-main primary" onclick="generateM3u('generate')" disabled>Generar M3U</button>
+            </div>
+
+            <textarea id="m3uOutput" placeholder="El formato M3U generado aparecerá aquí..." readonly></textarea>
+            
+            <div class="action-group" style="justify-content: flex-end;">
+                <button id="copyM3uBtn" class="btn-main secondary" onclick="copyToClipboard()" disabled>Copiar</button>
+                <button id="downloadM3uBtn" class="btn-main primary" onclick="downloadM3u('m3u')" disabled>Descargar .m3u</button>
+            </div>
+        </div>
+
+        <div id="edit" class="tab-content">
+            <h2 style="font-size: 1.3em;">Películas a Editar</h2>
+            
+            <div class="form-group">
+                <p>Cargar Lista M3U o Xtream Link</p>
+                <input type="text" id="m3uUrl" placeholder="Pega aquí el enlace directo M3U o Xtream Link">
+                <button id="loadUrlBtn" class="btn-load primary" onclick="loadM3u()">Cargar M3U/Xtream Link 🌐</button>
+            </div>
+            
+            <p class="divider">--- O ---</p>
+
+            <div class="form-group">
+                <input type="file" id="m3uFile" accept=".m3u,.txt" style="display: none;">
+                <label for="m3uFile" id="loadFileBtn" class="btn-load" style="text-align: center;">Cargar M3U/TXT desde Archivo 📂</label>
+            </div>
+
+            <div class="top-actions">
+                 <h3 style="color: var(--theme-text);">Contenido Cargado</h3>
+                 <div style="position: relative;">
+                    <button id="sortBtnEdit" onclick="toggleSortDropdown('edit')" disabled>⚙️ Ordenar</button>
+                    <div id="sortDropdownEdit" class="sort-dropdown">
+                        <button onclick="sortEntries('edit', 'title-asc')">Título (A-Z)</button>
+                        <button onclick="sortEntries('edit', 'title-desc')">Título (Z-A)</button>
+                        <button onclick="sortEntries('edit', 'group-asc')">Por Sección</button>
+                        <button onclick="sortEntries('edit', 'random')">Al Azar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="editFieldsContainer">
+                 <p style="text-align: center; color: #888; margin-top: 15px;">Cargue un archivo para empezar a editar.</p>
+            </div>
+
+            <div class="action-group">
+                 <button id="addEditEntryBtn" class="btn-main secondary" onclick="addM3uEntry('edit')">Añadir otra Película</button>
+                <button id="generateEditM3uBtn" class="btn-main primary" onclick="generateM3u('edit')" disabled>Generar M3U</button>
+            </div>
+
+             <textarea id="editM3uOutput" placeholder="El formato M3U editado aparecerá aquí..." readonly></textarea>
+             
+            <div class="action-group" style="justify-content: flex-end;">
+                <button id="copyEditM3uBtn" class="btn-main secondary" onclick="copyToClipboard('edit')" disabled>Copiar</button>
+                <button id="downloadEditM3uBtn" class="btn-main primary" onclick="downloadM3u('m3u', 'edit')" disabled>Descargar .m3u</button>
+            </div>
+        </div>
+        
+        <div id="xtream" class="tab-content">
+            <h2 style="font-size: 1.3em;">Herramientas Xtream Codes</h2>
+            
+            <div class="xtream-section">
+                <h3>1. Xtream a M3U Link</h3>
+                <p>Genera un enlace de descarga M3U a partir de las credenciales.</p>
+                
+                <div class="input-xtream-group">
+                    <label for="xtream_base_url">URL Base (Ej: http://dominio:8080)</label>
+                    <input type="text" id="xtream_base_url" placeholder="URL Base (Obligatorio)">
+                </div>
+                <div class="input-xtream-group">
+                    <label for="xtream_user_gen">Usuario</label>
+                    <input type="text" id="xtream_user_gen" placeholder="Nombre de Usuario (Obligatorio)">
+                </div>
+                 <div class="input-xtream-group">
+                    <label for="xtream_pass_gen">Contraseña</label>
+                    <input type="text" id="xtream_pass_gen" placeholder="Contraseña (Obligatorio)">
+                </div>
+                
+                <button class="btn-main secondary" onclick="generateXtreamLink()">Generar Link M3U</button>
+                
+                <div id="resultLinkGen" class="result-link" style="display: none;">
+                    <p style="margin: 0; color: var(--theme-text);">Enlace Generado:</p>
+                    <div id="resultLinkGenOutput" class="result-link-output"></div>
+                     <button class="btn-main primary" style="margin-top: 10px; width: auto;" onclick="copyResultLink('resultLinkGenOutput')">Copiar Link</button>
+                </div>
+            </div>
+            
+            <p class="divider">***</p>
+
+            <div class="xtream-section">
+                <h3>2. M3U Link a Xtream</h3>
+                <p>Extrae las credenciales (URL, Usuario, Contraseña) de un enlace de descarga M3U.</p>
+                
+                <div class="input-xtream-group">
+                    <label for="xtream_full_link">Link M3U Completo</label>
+                    <input type="text" id="xtream_full_link" placeholder="Pega el enlace M3U aquí">
+                </div>
+                
+                 <button class="btn-main secondary" onclick="parseXtreamLink()">Separar Credenciales</button>
+                 
+                 <div id="resultLinkParse" class="result-link" style="display: none;">
+                    <p style="margin: 0; color: var(--theme-text);">Credenciales Extraídas:</p>
+                    <input type="text" id="xtream_parsed_url" readonly placeholder="URL Base">
+                    <input type="text" id="xtream_parsed_user" readonly placeholder="Usuario">
+                    <input type="text" id="xtream_parsed_pass" readonly placeholder="Contraseña">
+                     <button class="btn-main primary" style="margin-top: 10px; width: auto;" onclick="copyAllParsedCredentials()">Copiar Credenciales</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // JS para la lógica de la aplicación
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializa con una entrada por defecto en el modo 'Generar'
+            addM3uEntry('generate');
+            
+            // Listener para carga de archivos
+            document.getElementById('m3uFile').addEventListener('change', handleFileUpload);
+            
+            // Listeners para las validaciones en tiempo real
+            document.getElementById('m3uFieldsContainer').addEventListener('input', () => updateGenerateState('generate'));
+            document.getElementById('editFieldsContainer').addEventListener('input', () => updateGenerateState('edit'));
+            
+             // Lógica para re-numerar al añadir/eliminar
+            const observerConfig = { childList: true };
+            new MutationObserver(() => renumberEntries('generate')).observe(document.getElementById('m3uFieldsContainer'), observerConfig);
+            new MutationObserver(() => renumberEntries('edit')).observe(document.getElementById('editFieldsContainer'), observerConfig);
+            
+            // Establecer el tema inicial
+            setTheme('green-dark'); 
+            
+            // Cerrar dropdown al hacer clic fuera
+            document.addEventListener('click', (event) => {
+                const isSortButton = event.target.id && event.target.id.startsWith('sortBtn');
+                const isDropdown = event.target.closest('.sort-dropdown');
+                
+                if (!isSortButton && !isDropdown) {
+                    document.getElementById('sortDropdownGenerate')?.classList.remove('show');
+                    document.getElementById('sortDropdownEdit')?.classList.remove('show');
+                }
+            });
+        });
+        
+        /**
+         * Aplica el tema seleccionado cambiando la clase del body.
+         * @param {string} themeName - Nombre del tema.
+         */
+        function setTheme(themeName) {
+            const body = document.body;
+            // Primero, limpiar todas las clases de tema
+            body.classList.remove('theme-light', 'theme-dark', 'theme-green', 'theme-red', 'theme-green-dark', 'theme-red-dark');
+            
+            // Aplicar la clase correspondiente
+            switch (themeName) {
+                case 'light':
+                    body.classList.add('theme-light');
+                    break;
+                case 'dark':
+                    body.classList.add('theme-dark');
+                    break;
+                case 'green':
+                    body.classList.add('theme-green');
+                    break;
+                case 'red':
+                    body.classList.add('theme-red');
+                    break;
+                case 'green-dark':
+                    body.classList.add('theme-green-dark');
+                    break;
+                case 'red-dark':
+                    body.classList.add('theme-red-dark');
+                    break;
+                default:
+                    body.classList.add('theme-green-dark'); // Default
+            }
+            // Asegurar que el selector refleje el tema actual si fue llamado externamente
+            const themeSelector = document.getElementById('theme-selector');
+            if (themeSelector) themeSelector.value = themeName;
+        }
+
+        /**
+         * Maneja el cambio de pestañas (Generar M3U vs. Editar M3U vs. Xtream Tools).
+         * @param {string} tabId - El ID de la pestaña a abrir.
+         */
+        function openTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab-button[onclick*="${tabId}"]`).classList.add('active');
+        }
+
+        /**
+         * Alterna la visibilidad del menú de ordenar.
+         * @param {string} mode - El modo ('generate' o 'edit').
+         */
+        function toggleSortDropdown(mode) {
+             const dropdownId = mode === 'generate' ? 'sortDropdownGenerate' : 'sortDropdownEdit';
+             document.getElementById(dropdownId)?.classList.toggle('show');
+        }
+
+        /**
+         * Actualiza la numeración de las entradas en el contenedor.
+         * @param {string} mode - El modo ('generate' o 'edit').
+         */
+        function renumberEntries(mode) {
+            const containerId = mode === 'generate' ? 'm3uFieldsContainer' : 'editFieldsContainer';
+            const container = document.getElementById(containerId);
+            const entries = container ? container.querySelectorAll('.m3u-entry') : [];
+            
+            entries.forEach((entry, index) => {
+                const header = entry.querySelector('.entry-header h4');
+                if (header) {
+                    header.textContent = `Película #${index + 1}`;
+                }
+            });
+            updateGenerateState(mode);
+        }
+        
+         /**
+         * Ordena las entradas M3U.
+         * (Se mantiene la función original del código del usuario)
+         */
+        function sortEntries(mode, type) {
+            const containerId = mode === 'generate' ? 'm3uFieldsContainer' : 'editFieldsContainer';
+            const container = document.getElementById(containerId);
+            if (!container) return; // Seguridad
+            const entries = Array.from(container.querySelectorAll('.m3u-entry'));
+            
+            if (entries.length === 0) return;
+
+            let sortedEntries;
+
+            switch (type) {
+                case 'title-asc':
+                    sortedEntries = entries.sort((a, b) => {
+                        const titleA = a.querySelector('input[data-field="title"]').value.toLowerCase();
+                        const titleB = b.querySelector('input[data-field="title"]').value.toLowerCase();
+                        return titleA.localeCompare(titleB);
+                    });
+                    break;
+                case 'title-desc':
+                    sortedEntries = entries.sort((a, b) => {
+                        const titleA = a.querySelector('input[data-field="title"]').value.toLowerCase();
+                        const titleB = b.querySelector('input[data-field="title"]').value.toLowerCase();
+                        return titleB.localeCompare(titleA);
+                    });
+                    break;
+                case 'group-asc':
+                    sortedEntries = entries.sort((a, b) => {
+                        const groupA = a.querySelector('input[data-field="group"]').value.toLowerCase() || 'zzz';
+                        const groupB = b.querySelector('input[data-field="group"]').value.toLowerCase() || 'zzz';
+                         const titleA = a.querySelector('input[data-field="title"]').value.toLowerCase();
+                        const titleB = b.querySelector('input[data-field="title"]').value.toLowerCase();
+                        
+                        // Primero ordenar por grupo, si son iguales, ordenar por título
+                        if (groupA.localeCompare(groupB) !== 0) {
+                            return groupA.localeCompare(groupB);
+                        }
+                        return titleA.localeCompare(titleB);
+                    });
+                    break;
+                case 'random':
+                    sortedEntries = entries.sort(() => Math.random() - 0.5);
+                    break;
+                default:
+                    return;
+            }
+            
+            // Reinsertar las entradas ordenadas en el contenedor
+            container.innerHTML = '';
+            sortedEntries.forEach(entry => container.appendChild(entry));
+            
+            // Re-numerar las entradas después de ordenarlas
+            renumberEntries(mode);
+            
+            // Ocultar el dropdown
+            toggleSortDropdown(mode);
+        }
+
+        /**
+         * Añade un nuevo conjunto de campos al contenedor.
+         */
+        function addM3uEntry(mode, title = '', url = '', logo = '', group = '') {
+            const containerId = mode === 'generate' ? 'm3uFieldsContainer' : 'editFieldsContainer';
+            const container = document.getElementById(containerId);
+            if (!container) return; // Seguridad
+
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'm3u-entry';
+
+            entryDiv.innerHTML = `
+                <div class="entry-header">
+                    <h4>Película #</h4>
+                    <button type="button" class="remove-btn" onclick="removeEntry(this, '${mode}')">❌</button>
+                </div>
+                <input type="text" placeholder="Nombre de la Película" value="${title}" required data-field="title">
+                <input type="text" placeholder="Enlace (URL) del video/stream" value="${url}" required data-field="url">
+                <input type="text" placeholder="Portada (URL) de la imagen (opcional)" value="${logo}" data-field="logo">
+                <input type="text" placeholder="Sección (Group-Title) (opcional)" value="${group}" data-field="group">
+            `;
+
+            container.appendChild(entryDiv);
+            renumberEntries(mode); 
+            entryDiv.querySelector('input[data-field="title"]')?.focus(); 
+            updateGenerateState(mode);
+        }
+
+        /**
+         * Elimina un conjunto de campos M3U.
+         */
+        function removeEntry(button, mode) {
+            const entryDiv = button.closest('.m3u-entry');
+            entryDiv?.remove();
+            renumberEntries(mode);
+        }
+
+        /**
+         * Valida las entradas y actualiza el estado de los botones "Generar M3U" y "Ordenar".
+         */
+        function updateGenerateState(mode) {
+            const containerId = mode === 'generate' ? 'm3uFieldsContainer' : 'editFieldsContainer';
+            const generateBtnId = mode === 'generate' ? 'generateM3uBtn' : 'generateEditM3uBtn';
+            const sortBtnId = mode === 'generate' ? 'sortBtnGenerate' : 'sortBtnEdit';
+            
+            const container = document.getElementById(containerId);
+            const entries = container ? container.querySelectorAll('.m3u-entry') : [];
+            let isValid = false;
+            
+            if (entries.length > 0) {
+                isValid = true;
+                entries.forEach(entry => {
+                    const titleInput = entry.querySelector('input[data-field="title"]');
+                    const urlInput = entry.querySelector('input[data-field="url"]');
+                    
+                    if (!titleInput?.value.trim() || !urlInput?.value.trim()) {
+                        isValid = false;
+                    }
+                });
+                const sortBtn = document.getElementById(sortBtnId);
+                if (sortBtn) sortBtn.disabled = entries.length < 2; 
+            } else {
+                 const sortBtn = document.getElementById(sortBtnId);
+                 if (sortBtn) sortBtn.disabled = true;
+            }
+            
+            const generateBtn = document.getElementById(generateBtnId);
+            if (generateBtn) generateBtn.disabled = !isValid;
+            
+            // Deshabilita botones de descarga/copia si el texto de salida está vacío
+            const outputArea = document.getElementById(mode === 'generate' ? 'm3uOutput' : 'editM3uOutput');
+             const copyBtn = document.getElementById(mode === 'generate' ? 'copyM3uBtn' : 'copyEditM3uBtn');
+             const downloadBtn = document.getElementById(mode === 'generate' ? 'downloadM3uBtn' : 'downloadEditM3uBtn');
+
+             if (outputArea && copyBtn && downloadBtn) {
+                 if (!outputArea.value.trim()) {
+                    copyBtn.disabled = true;
+                    downloadBtn.disabled = true;
+                } else {
+                     copyBtn.disabled = false;
+                     downloadBtn.disabled = false;
+                }
+             }
+        }
+        
+        /**
+         * Genera el contenido del archivo M3U a partir de las entradas.
+         */
+        function generateM3u(mode) {
+            const containerId = mode === 'generate' ? 'm3uFieldsContainer' : 'editFieldsContainer';
+            const outputAreaId = mode === 'generate' ? 'm3uOutput' : 'editM3uOutput';
+            const container = document.getElementById(containerId);
+            if (!container) return; // Seguridad
+            const entries = container.querySelectorAll('.m3u-entry');
+            let m3uContent = '#EXTM3U\n';
+            let validEntryCount = 0;
+
+            entries.forEach(entry => {
+                const title = entry.querySelector('input[data-field="title"]')?.value.trim();
+                const url = entry.querySelector('input[data-field="url"]')?.value.trim();
+                const logo = entry.querySelector('input[data-field="logo"]')?.value.trim();
+                const group = entry.querySelector('input[data-field="group"]')?.value.trim();
+
+                if (title && url) {
+                    let extinf = `#EXTINF:-1 tvg-name="${title}"`;
+                    
+                    if (logo) {
+                        extinf += ` tvg-logo="${logo}"`;
+                    }
+                    if (group) {
+                         extinf += ` group-title="${group}"`;
+                    }
+                    
+                    extinf += `,${title}\n`;
+                    m3uContent += extinf;
+                    m3uContent += `${url}\n`;
+                    validEntryCount++;
+                }
+            });
+
+            const outputArea = document.getElementById(outputAreaId);
+            if (outputArea) {
+                if (validEntryCount === 0) {
+                    outputArea.value = 'No hay entradas válidas para generar el M3U.';
+                } else {
+                    outputArea.value = m3uContent;
+                }
+            }
+            updateGenerateState(mode);
+        }
+        
+        // --- Lógica de Edición y Carga ---
+        
+        /**
+         * Maneja la carga de un archivo local M3U/TXT.
+         */
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                parseM3uContent(e.target.result);
+            };
+            reader.readAsText(file);
+        }
+
+        /**
+         * Intenta cargar el M3U desde una URL. Ahora acepta URLs M3U normales o Xtream Links, 
+         * e intenta cambiar de HTTPS a HTTP si falla el Xtream Link.
+         */
+        async function loadM3u() {
+            const urlInput = document.getElementById('m3uUrl');
+            const url = urlInput ? urlInput.value.trim() : '';
+            if (!url) {
+                alert('Por favor, introduce un enlace antes de cargar.');
+                return;
+            }
+            
+            const isXtreamLink = url.includes('get.php?username=') && url.includes('&password=');
+
+            let downloadUrl = url;
+            let finalResponse = null;
+
+            try {
+                 // 1. Intento principal (tal como está la URL)
+                 finalResponse = await fetch(downloadUrl);
+                 
+                 if (!finalResponse.ok && isXtreamLink && downloadUrl.startsWith('https:')) {
+                     // 2. Si falla y es Xtream link HTTPS, intentar cambiar a HTTP
+                     const httpDownloadUrl = downloadUrl.replace('https:', 'http:');
+                     console.log("Carga fallida. Intentando cambiar a HTTP...");
+                     
+                     finalResponse = await fetch(httpDownloadUrl);
+                     
+                      if (!finalResponse.ok) {
+                          // Si falla HTTP también, lanzamos error del primer intento (o el más relevante)
+                         throw new Error(`Error ${finalResponse.status}. Falló la carga inicial y el intento HTTP.`);
+                      }
+                      downloadUrl = httpDownloadUrl; // La URL HTTP funcionó
+                 } else if (!finalResponse.ok) {
+                     // 3. Falla por otra razón (CORS, 404, etc.)
+                     throw new Error(`Error ${finalResponse.status}: ${finalResponse.statusText}`);
+                 }
+                 
+                 const text = await finalResponse.text();
+                 parseM3uContent(text);
+                 alert(`Lista cargada con éxito desde: ${downloadUrl}`);
+                
+            } catch (error) {
+                 alert(`Error al cargar el enlace: ${error.message}. Verifica que el enlace sea accesible y no esté bloqueado por CORS.`);
+            }
+        }
+        
+        /**
+         * Analiza el texto M3U y rellena los campos de edición.
+         */
+        function parseM3uContent(content) {
+            const container = document.getElementById('editFieldsContainer');
+            if (!container) return; // Seguridad
+            
+            container.innerHTML = ''; // Limpiar campos existentes
+            
+            const lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            let entriesFound = 0;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+
+                if (line.startsWith('#EXTINF')) {
+                    const nextLine = lines[i + 1] || '';
+                    if (!nextLine || nextLine.startsWith('#')) {
+                        continue; 
+                    }
+                    
+                    // 1. Extraer el Título
+                    const matchTitle = line.match(/,([^,]*)$/);
+                    const title = matchTitle ? matchTitle[1].trim() : '';
+
+                    // 2. Extraer el Logo (tvg-logo)
+                    const matchLogo = line.match(/tvg-logo="([^"]*)"/i);
+                    const logo = matchLogo ? matchLogo[1] : '';
+                    
+                    // 3. Extraer la Sección (group-title)
+                    const matchGroup = line.match(/group-title="([^"]*)"/i);
+                    const group = matchGroup ? matchGroup[1] : '';
+
+                    // 4. La siguiente línea es la URL
+                    const url = nextLine;
+
+                    addM3uEntry('edit', title, url, logo, group);
+                    i++; // Saltar la línea de URL
+                    entriesFound++;
+                }
+            }
+            
+            if (entriesFound === 0) {
+                 container.innerHTML = '<p style="text-align: center; color: #888; margin-top: 15px;">No se encontraron entradas válidas en el archivo M3U/TXT.</p>';
+            }
+            renumberEntries('edit');
+        }
+
+        // --- Funciones de Salida (Descarga/Copia) ---
+
+        /**
+         * Copia el contenido del M3U generado/editado al portapapeles.
+         */
+        function copyToClipboard(mode = 'generate') {
+            const outputAreaId = mode === 'generate' ? 'm3uOutput' : 'editM3uOutput';
+            const outputArea = document.getElementById(outputAreaId);
+            
+            if (outputArea?.value.trim()) {
+                navigator.clipboard.writeText(outputArea.value).then(() => {
+                    alert('¡M3U copiado al portapapeles!');
+                }).catch(err => {
+                    alert('Error al copiar. Copie manualmente del recuadro.');
+                });
+            }
+        }
+
+        /**
+         * Descarga el contenido del M3U como un archivo.
+         */
+        function downloadM3u(format, mode = 'generate') {
+            const outputAreaId = mode === 'generate' ? 'm3uOutput' : 'editM3uOutput';
+            const content = document.getElementById(outputAreaId)?.value;
+            const filename = `Bflix_Studio_${mode}.${format}`;
+            
+            if (!content?.trim()) return;
+
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // --- FUNCIONES XTREAM TOOLS ---
+        
+        /**
+         * Genera el enlace de descarga M3U Xtream Codes a partir de los campos.
+         */
+        function generateXtreamLink() {
+            const baseUrl = document.getElementById('xtream_base_url')?.value.trim();
+            const username = document.getElementById('xtream_user_gen')?.value.trim();
+            const password = document.getElementById('xtream_pass_gen')?.value.trim();
+            const outputDiv = document.getElementById('resultLinkGenOutput');
+            const container = document.getElementById('resultLinkGen');
+
+            if (!baseUrl || !username || !password) {
+                if (outputDiv) outputDiv.textContent = 'Error: Rellena todos los campos obligatorios.';
+                if (container) container.style.display = 'block';
+                return;
+            }
+
+            // Asegurar que la URL Base no termine en '/'
+            const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+
+            // Construir el enlace M3U de Xtream Codes
+            const fullLink = `${cleanBaseUrl}/get.php?username=${username}&password=${password}&type=m3u`;
+            
+            if (outputDiv) outputDiv.textContent = fullLink;
+            if (container) container.style.display = 'block';
+        }
+        
+        /**
+         * Analiza un enlace M3U de Xtream Codes y extrae las credenciales.
+         */
+        function parseXtreamLink() {
+            const fullUrl = document.getElementById('xtream_full_link')?.value.trim();
+            const container = document.getElementById('resultLinkParse');
+            
+            // Ocultar resultados por defecto
+            if (container) container.style.display = 'none';
+
+            if (!fullUrl) {
+                alert('Por favor, pega una URL Xtream Codes válida.');
+                return;
+            }
+
+            // Regex para capturar URL Base, Usuario y Contraseña
+            const regex = /^(https?:\/\/[^/]+)\/get\.php\?username=([^&]+)&password=([^&]+)/i;
+            const match = fullUrl.match(regex);
+
+            if (match) {
+                const baseUrl = match[1]; 
+                const username = match[2]; 
+                const password = match[3];
+                
+                // Rellenar los campos
+                if (document.getElementById('xtream_parsed_url')) document.getElementById('xtream_parsed_url').value = baseUrl;
+                if (document.getElementById('xtream_parsed_user')) document.getElementById('xtream_parsed_user').value = username;
+                if (document.getElementById('xtream_parsed_pass')) document.getElementById('xtream_parsed_pass').value = password;
+                
+                // Mostrar el contenedor de resultados
+                if (container) container.style.display = 'block';
+                
+            } else {
+                alert('Formato de URL Xtream Codes no reconocido. Asegúrate de que tenga el formato /get.php?username=...&password=...');
+            }
+        }
+        
+        /**
+         * Copia el resultado de un elemento específico
+         */
+        function copyResultLink(elementId) {
+             const element = document.getElementById(elementId);
+             if (!element) return;
+             
+             // Priorizar textContent para DIVs y value para INPUTs
+             const textToCopy = element.textContent || element.value;
+             
+             navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('Enlace copiado al portapapeles!');
+            }).catch(err => {
+                alert('Error al copiar. Copie manualmente del recuadro.');
+            });
+        }
+        
+        /**
+         * Copia todas las credenciales analizadas.
+         */
+        function copyAllParsedCredentials() {
+             const url = document.getElementById('xtream_parsed_url')?.value;
+             const user = document.getElementById('xtream_parsed_user')?.value;
+             const pass = document.getElementById('xtream_parsed_pass')?.value;
+             
+             if (!url) return;
+             
+             const textToCopy = `URL Base: ${url}\nUsuario: ${user}\nContraseña: ${pass}`;
+             
+             navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('Credenciales copiadas al portapapeles!');
+            }).catch(err => {
+                alert('Error al copiar. Copie manualmente de los recuadros.');
+            });
+        }
+
+    </script>
+
+</body>
+</html>
+
